@@ -7,6 +7,8 @@ import com.maxeler.maxcompiler.v2.managers.standard.Manager;
 import com.maxeler.maxcompiler.v2.managers.standard.Manager.IOType;
 
 class ParticleSimManager {
+    
+    	static final float ZeroC = 0;
 
 	public static void main(String[] args) {
 		Manager m = new Manager(new EngineParameters(args));
@@ -34,7 +36,7 @@ class ParticleSimManager {
 		ei.setStream("piY", addressType, sizeBytes);
 		ei.setStream("piZ", addressType, sizeBytes);
 		ei.setStream("piM", addressType, sizeBytes);
-
+        ei.setScalar("DFEKernel", "zero", ZeroC);
 		ei.setStream("xData", addressType, sizeBytes);
 		ei.setStream("yData", addressType, sizeBytes);
 		ei.setStream("zData", addressType, sizeBytes);

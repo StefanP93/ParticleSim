@@ -5,6 +5,7 @@ import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.Count.Params;
 import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.memory.Memory;
 import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEVar;
 import com.maxeler.maxcompiler.v2.utils.MathUtils;
+import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.KernelMath;
 
 class ParticleSimKernel extends Kernel {
 	ParticleSimKernel(KernelParameters parameters) {
@@ -36,6 +37,7 @@ class ParticleSimKernel extends Kernel {
 		DFEVar y = io.input("pY", dfeFloat(8,24), readingInput);
 		DFEVar z = io.input("pZ", dfeFloat(8,24), readingInput);
 		DFEVar m = io.input("pM", dfeFloat(8,24), readingInput);
+	
 
 		Memory<DFEVar> Ram = mem.alloc(dfeFloat(8,24), 4*DATA_SIZE);
 		
@@ -50,10 +52,11 @@ class ParticleSimKernel extends Kernel {
 		DFEVar pz = io.input("piZ", dfeFloat(8,24), ~readingInput);
 		DFEVar pm = io.input("piM", dfeFloat(8,24), ~readingInput);
 
-		DFEVar ax = 0.0; 
-		DFEVar ay = 0.0;
-		DFEVar az = 0.0;
-		DFEVar am = 0.0;
+		DFEVar ax = io.scalarInput("zero", dfeFloat(8, 24)); 
+		DFEVar ay = io.scalarInput("zero", dfeFloat(8, 24));
+		DFEVar az = io.scalarInput("zero", dfeFloat(8, 24)); 
+		DFEVar am = io.scalarInput("zero", dfeFloat(8, 24));
+		DFEVar zeroM = io.scalarInput("zero", dfeFloat(8, 24)); 
 
 		for(int i=0;i<DATA_SIZE;i++){
 
@@ -62,26 +65,26 @@ class ParticleSimKernel extends Kernel {
 				DFEVar qZ = Ram.read(zAddress + i);
 				DFEVar qM = Ram.read(mAddress + i);
 
-				DFEVar rx = qx - px; 
-                DFEVar ry = qy - py;  
-                DFEVar rz = qz - pz;  
+				DFEVar rx = qX - px; 
+                DFEVar ry = qY - py;  
+                DFEVar rz = qZ - pz;  
                 DFEVar dd = rx*rx + ry*ry + rz*rz; 
 
-                ax += dd === 0 ? 0 : (rx * qM *  1/ (dd*sqrt(dd))); 
-                ay += dd === 0 ? 0 : (ry * qM *  1/ (dd*sqrt(dd))); 
-                az += dd === 0 ? 0 : (rz * qM *  1/ (dd*sqrt(dd)));
+                ax += dd === 0 ? 0 : (rx * qM *  1/ (dd*KernelMath.sqrt(dd))); 
+                ay += dd === 0 ? 0 : (ry * qM *  1/ (dd*KernelMath.sqrt(dd))); 
+                az += dd === 0 ? 0 : (rz * qM *  1/ (dd*KernelMath.sqrt(dd)));
                 am += dd === 0 ? qM : 0;
 
                 DFEVar collision = dd === 0;
 
-               Ram.write(mAddress+i, 0, collision);
+               Ram.write(mAddress+i, zeroM, collision);
                Ram.write(mAddress+i, qM, collision);
 
 		}
 
 		io.output("xData", ax, dfeFloat(8,24),~readingInput);
-		io.output("yData", yx, dfeFloat(8,24),~readingInput);
-		io.output("zData", zx, dfeFloat(8,24),~readingInput);
-		io.output("mData", mx, dfeFloat(8,24),~readingInput);
+		io.output("yData", ay, dfeFloat(8,24),~readingInput);
+		io.output("zData", az, dfeFloat(8,24),~readingInput);
+		io.output("mData", am, dfeFloat(8,24),~readingInput);
 	}
 }
